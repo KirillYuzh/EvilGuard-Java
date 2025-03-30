@@ -30,12 +30,12 @@ jobs:
           mkdir -p build/classes
           javac -cp lib/json.jar -d build/classes $(find src -name "*.java")
 
-      - name: Package JAR
+      - name: Package Fat JAR
         run: |
           mkdir -p release
           echo "Main-Class: EvilGuard" > manifest.txt
-          # Собираем JAR со всеми зависимостями
-          jar cfm release/EvilGuard.jar manifest.txt -C build/classes . -C lib .
+          unzip -o lib/json.jar -d build/classes/                            
+          jar cfm release/EvilGuard.jar manifest.txt -C build/classes .
 
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v4
