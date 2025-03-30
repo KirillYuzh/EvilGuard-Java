@@ -14,7 +14,7 @@
 
 
 # Скачать
-[Скачать JAR](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard.jar)
+[Скачать JAR](https://github.com/KirillYuzh/EvilGuard-Java/releases/download/main/EvilGuard.jar)
 
 После установки:
 ```bash
