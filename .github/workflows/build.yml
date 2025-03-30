@@ -25,6 +25,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Copy resources
+        run: |
+          mkdir -p build/classes/resources
+          cp -r src/resources/* build/classes/resources/
+
+      - name: Copy resources fonts
+        run: |
+          mkdir -p build/classes/resources/fonts
+          cp -r src/resources/fonts/* build/classes/resources/fonts/
+
       - name: Compile Java sources
         run: |
           mkdir -p build/classes

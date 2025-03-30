@@ -27,9 +27,43 @@ public class EvilGuard extends JFrame {
     public EvilGuard() {
         setTitle("EvilGuard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(700, 500);
+        setSize(500, 300);
         setResizable(false);
         setLocationRelativeTo(null);
+        try {
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/icon.png"));
+            Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+            setIconImage(scaledImage);
+            
+            UIManager.put("OptionPane.informationIcon", new ImageIcon(scaledImage));
+            UIManager.put("OptionPane.warningIcon", new ImageIcon(scaledImage));
+            UIManager.put("OptionPane.errorIcon", new ImageIcon(scaledImage));
+        } catch (Exception e) {
+            System.err.println("Не удалось загрузить иконку: " + e.getMessage());
+        }
+        try {
+            // Загружаем шрифт из ресурсов
+            InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/Triodion-Regular.ttf");
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            
+            // Регистрируем шрифт в графическом окружении
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(customFont);
+            
+            // Создаем производный шрифт с нужным размером
+            Font derivedFont = customFont.deriveFont(Font.PLAIN, 14);
+            
+            // Устанавливаем как шрифт по умолчанию для всех компонентов
+            UIManager.put("Button.font", derivedFont);
+            UIManager.put("Label.font", derivedFont);
+            UIManager.put("TextField.font", derivedFont);
+            UIManager.put("TextArea.font", derivedFont);
+            UIManager.put("OptionPane.messageFont", derivedFont);
+            UIManager.put("OptionPane.buttonFont", derivedFont);
+            
+        } catch (IOException | FontFormatException e) {
+            System.err.println("Не удалось загрузить шрифт: " + e.getMessage());
+        }
         initUI();
     }
 
@@ -69,29 +103,33 @@ public class EvilGuard extends JFrame {
         styleButton(uploadBtn, true);
         uploadBtn.addActionListener(e -> uploadFile());
 
-        JPanel buttonPanel = new JPanel();
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 0, 10));
         buttonPanel.setBackground(bgColor);
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
-        buttonPanel.add(Box.createVerticalGlue());
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        detailsBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, detailsBtn.getPreferredSize().height));
+        uploadBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, uploadBtn.getPreferredSize().height));
+
         buttonPanel.add(detailsBtn);
-        buttonPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         buttonPanel.add(uploadBtn);
-        buttonPanel.add(Box.createVerticalGlue());
 
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
         add(mainPanel);
     }
 
     public void styleButton(JButton button, boolean isPrimary) {
-        button.setFont(new Font("Verdana", Font.BOLD, 14));
+        Font buttonFont = UIManager.getFont("Button.font");
+        if (buttonFont == null) {
+            buttonFont = new Font("Verdana", Font.BOLD, 14);
+        }
+        button.setFont(buttonFont.deriveFont(Font.BOLD));
         button.setForeground(textColor);
         button.setBackground(isPrimary ? buttonBg : new Color(255, 255, 255, 50));
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(textColor, isPrimary ? 2 : 1),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+                BorderFactory.createEmptyBorder(10, 0, 10, 0) // Уменьшаем боковые отступы
         ));
-        button.setMaximumSize(new Dimension(250, 50));
 
         button.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
