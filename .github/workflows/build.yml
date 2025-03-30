@@ -8,91 +8,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      
-      - name: Build Windows JAR
-        run: |
-          gradlew.bat clean build
-          mkdir release
-          copy build\libs\EvilGuard.jar release\EvilGuard-Windows.jar
-      
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: EvilGuard-Windows
-          path: ./release/EvilGuard-Windows.jar
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      
-      - name: Build macOS JAR
-        run: |
-          ./gradlew clean build
-          mkdir release
-          cp build/libs/EvilGuard.jar release/EvilGuard-MacOS.jar
-      
-      - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: EvilGuard-MacOS
-          path: ./release/EvilGuard-MacOS.jar
-
-  build-linux:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-      
-      - name: Build Linux JAR
+
+      - name: Compile Java sources
         run: |
-          ./gradlew clean build
-          mkdir release
-          cp build/libs/EvilGuard.jar release/EvilGuard-Linux.jar
-      
-      - name: Upload Linux Artifact
+          mkdir -p build/classes
+          javac -d build/classes $(find src -name "*.java")
+
+      - name: Package JAR
+        run: |
+          mkdir -p release
+          jar cfe release/EvilGuard.jar MainClass -C build/classes .
+
+      - name: Upload JAR Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: EvilGuard-Linux
-          path: ./release/EvilGuard-Linux.jar
+          name: EvilGuard-JAR
+          path: release/EvilGuard.jar
 
   create-release:
-    needs: [build-windows, build-macos, build-linux]
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download all artifacts
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
+          name: EvilGuard-JAR
           path: ./artifacts
-      
-      - name: Verify artifacts structure
-        run: |
-          echo "### Artifacts structure ###"
-          ls -R ./artifacts/
-      
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -101,18 +56,8 @@ jobs:
           body: |
             ### EvilGuard ${{ github.ref_name }}
             
-            **Ссылки на скачивание:**
-            - [Windows JAR](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Windows.jar)
-            - [macOS JAR](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-MacOS.jar)
-            - [Linux JAR](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard-Linux.jar)
-            
-            **Инструкция по установке:**
-            1. Скачай JAR файл для вашей ОС.
-            2. Запусти в терминале `java -jar EvilGuard-<OS>.jar`.
-            3. Работай!
+            **Скачать:**
+            - [JAR File](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/EvilGuard.jar)
           draft: false
           prerelease: false
-          files: |
-            ./artifacts/EvilGuard-Windows/EvilGuard-Windows.jar
-            ./artifacts/EvilGuard-MacOS/EvilGuard-MacOS.jar
-            ./artifacts/EvilGuard-Linux/EvilGuard-Linux.jar
+          files: ./artifacts/EvilGuard.jar

@@ -39,7 +39,7 @@ public class EvilGuard extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Title
-        JLabel titleLabel = new JLabel("<html><h1>EvilGuard</h1><h4 style='color:rgba(255,255,255,0.5)'>by Hex Bomb team</h4></html>", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("<html><h1>EvilGuard</h1><h4 style='color:rgba(255,255,255,0.5)'>Приложение написано ребятами из БАС2402</h4></html>", SwingConstants.CENTER);
         titleLabel.setForeground(textColor);
         titleLabel.setFont(new Font("Verdana", Font.BOLD, 24));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
@@ -106,7 +106,7 @@ public class EvilGuard extends JFrame {
     public void uploadFile() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Выберите файл");
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Executable Files (*.exe)", "exe");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Выберите файл (*.exe)", "exe");
         fileChooser.setFileFilter(filter);
 
         int returnValue = fileChooser.showOpenDialog(this);
@@ -158,7 +158,7 @@ public class EvilGuard extends JFrame {
             return;
         }
 
-        statusLabel.setText("Отправляем файл в VirusTotal...");
+        statusLabel.setText("Отправляем файл на VirusTotal...");
 
         new Thread(() -> {
             try {
