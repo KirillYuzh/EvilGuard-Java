@@ -10,6 +10,8 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.json.JSONObject;
+import java.io.InputStream;
+
 
 public class EvilGuard extends JFrame {
     private final Color bgColor = new Color(51, 51, 51);
