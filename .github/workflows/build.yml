@@ -14,6 +14,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download JSON Library
+        run: |
+          mkdir -p lib
+          curl -L -o lib/json.jar https://repo1.maven.org/maven2/org/json/json/20240303/json-20240303.jar
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
@@ -23,12 +28,13 @@ jobs:
       - name: Compile Java sources
         run: |
           mkdir -p build/classes
-          javac -d build/classes $(find src -name "*.java")
+          javac -cp lib/json.jar -d build/classes $(find src -name "*.java")
 
       - name: Package JAR
         run: |
           mkdir -p release
           jar cfe release/EvilGuard.jar MainClass -C build/classes .
+          cp lib/json.jar release/
 
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v4
