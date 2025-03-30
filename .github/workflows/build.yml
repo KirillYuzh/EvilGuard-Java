@@ -34,7 +34,8 @@ jobs:
         run: |
           mkdir -p release
           echo "Main-Class: EvilGuard" > manifest.txt
-          jar cfm release/EvilGuard.jar manifest.txt -C build/classes .
+          # Собираем JAR со всеми зависимостями
+          jar cfm release/EvilGuard.jar manifest.txt -C build/classes . -C lib .
 
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v4
