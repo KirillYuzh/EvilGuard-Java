@@ -203,16 +203,13 @@ public class EvilGuard extends JFrame {
         new Thread(() -> {
             try {
                 String fileHash = calculateSHA256(file.toPath());
-                System.out.println("File hash: " + fileHash);
 
                 virustotalData = getVirusTotalReport(fileHash);
-                System.out.println("Initial report: " + virustotalData);
 
                 if (virustotalData == null || virustotalData.optInt("response_code") != 1) {
                     System.out.println("Uploading file...");
                     try {
                         virustotalData = uploadFileToVirusTotal(file);
-                        System.out.println("Upload response: " + virustotalData);
 
                         if (virustotalData.has("scan_id")) {
                             // Ждем и проверяем статус несколько раз
@@ -223,7 +220,6 @@ public class EvilGuard extends JFrame {
                                     break;
                                 }
                             }
-                            System.out.println("Final report: " + virustotalData);
                         }
                     } catch (IOException e) {
                         if (e.getMessage().contains("HTTP 413")) {
