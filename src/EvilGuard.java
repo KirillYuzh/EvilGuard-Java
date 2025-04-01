@@ -204,7 +204,19 @@ public class EvilGuard extends JFrame {
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             currentFile = selectedFile;
-            checkFileWithVirusTotal(selectedFile);
+            try {
+            String hexDump = getHexDump(currentFile.getPath());
+            if (containsSuspiciousKeywords(hexDump)) {
+                checkFileWithVirusTotal(selectedFile);
+            }
+            else{
+                showInfoMessage("Результат проверки",
+                        "Файл чистый! Можно запускать!");
+                detailsBtn.setVisible(false);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
         }
     }
 
@@ -232,6 +244,28 @@ public class EvilGuard extends JFrame {
         } catch (Exception e) {
             throw new IOException("Invalid JSON response: " + responseBody, e);
         }
+    }
+
+    private static String getHexDump(String path) throws IOException, InterruptedException {
+        Process p = new ProcessBuilder("xxd", path).start();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        StringBuilder output = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line).append("\n"); // Сохраняем каждую строку с переносом
+        }
+        return output.toString();
+    }
+
+    private static boolean containsSuspiciousKeywords(String hexDump) {
+        // Проверяем каждую строку на наличие ключевых слов
+        String[] lines = hexDump.split("\n");
+        for (String line : lines) {
+            if (line.contains("netstat") || line.contains("ipconfig") || line.contains("systeminfo") || line.contains("route print")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void checkFileWithVirusTotal(File file) {
