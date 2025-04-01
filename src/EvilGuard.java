@@ -11,6 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.json.JSONObject;
 import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class EvilGuard extends JFrame {
@@ -26,17 +32,19 @@ public class EvilGuard extends JFrame {
     private JSONObject virustotalData;
     private static final String API_KEY = "8958add810162195c3a9f355ef728c5a3652301a778f7ac405f015772032112b";
 
+    private File currentFile;
+
     public EvilGuard() {
         setTitle("EvilGuard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(500, 300);
+        setSize(450, 350);
         setResizable(false);
         setLocationRelativeTo(null);
         try {
             ImageIcon originalIcon = new ImageIcon(getClass().getResource("/resources/icon.png"));
             Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
             setIconImage(scaledImage);
-            
+
             UIManager.put("OptionPane.informationIcon", new ImageIcon(scaledImage));
             UIManager.put("OptionPane.warningIcon", new ImageIcon(scaledImage));
             UIManager.put("OptionPane.errorIcon", new ImageIcon(scaledImage));
@@ -45,24 +53,37 @@ public class EvilGuard extends JFrame {
         }
         try {
             // Загружаем шрифт из ресурсов
-            InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/Triodion-Regular.ttf");
+            InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/Tektur-VariableFont_wdth,wght.ttf");
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            
+
             // Регистрируем шрифт в графическом окружении
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
-            
+
             // Создаем производный шрифт с нужным размером
             Font derivedFont = customFont.deriveFont(Font.PLAIN, 14);
-            
-            // Устанавливаем как шрифт по умолчанию для всех компонентов
+
+            // Устанавливаем шрифт по умолчанию для всех компонентов Swing
             UIManager.put("Button.font", derivedFont);
             UIManager.put("Label.font", derivedFont);
             UIManager.put("TextField.font", derivedFont);
             UIManager.put("TextArea.font", derivedFont);
             UIManager.put("OptionPane.messageFont", derivedFont);
             UIManager.put("OptionPane.buttonFont", derivedFont);
-            
+            UIManager.put("ComboBox.font", derivedFont);
+            UIManager.put("CheckBox.font", derivedFont);
+            UIManager.put("RadioButton.font", derivedFont);
+            UIManager.put("Menu.font", derivedFont);
+            UIManager.put("MenuItem.font", derivedFont);
+            UIManager.put("PopupMenu.font", derivedFont);
+            UIManager.put("Table.font", derivedFont);
+            UIManager.put("TableHeader.font", derivedFont);
+            UIManager.put("List.font", derivedFont);
+            UIManager.put("TabbedPane.font", derivedFont);
+            UIManager.put("TitledBorder.font", derivedFont);
+            UIManager.put("ToolTip.font", derivedFont);
+            UIManager.put("Tree.font", derivedFont);
+
         } catch (IOException | FontFormatException e) {
             System.err.println("Не удалось загрузить шрифт: " + e.getMessage());
         }
@@ -74,63 +95,93 @@ public class EvilGuard extends JFrame {
         mainPanel.setBackground(bgColor);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Title
-        JLabel titleLabel = new JLabel("<html><h1>EvilGuard</h1><h4 style='color:rgba(255,255,255,0.5)'>Приложение написано ребятами из БАС2402</h4></html>", SwingConstants.CENTER);
+        // Загружаем кастомный шрифт
+        Font customFont = loadCustomFont(14);
+
+        // Создаем центральную панель с GridBagLayout для точного позиционирования
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setBackground(bgColor);
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        // Title - теперь в центре
+        JLabel titleLabel = new JLabel("<html><h1 style='text-align:center'>EvilGuard</h1><h4 style='color:rgba(255,255,255,0.5); text-align:center;'>Приложение написано ребятами из БАС2402</h4></html>", SwingConstants.CENTER);
         titleLabel.setForeground(textColor);
-        titleLabel.setFont(new Font("Verdana", Font.BOLD, 24));
-        mainPanel.add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setFont(customFont.deriveFont(Font.BOLD, 24));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        centerPanel.add(titleLabel, gbc);
+
+        // Добавляем центральную панель в mainPanel
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
 
         // Loading bar
         loadingBar = new JProgressBar();
         loadingBar.setIndeterminate(true);
         loadingBar.setVisible(false);
         loadingBar.setBorder(BorderFactory.createLineBorder(textColor, 1));
-        mainPanel.add(loadingBar, BorderLayout.CENTER);
 
         // Status label
-        statusLabel = new JLabel("<html><p>-- Приложение написано на Java --</p><p>-- Интеграция с VirusTotal API --</p></html>");
+        statusLabel = new JLabel("<html><p style='text-align:center;'>-- Приложение написано на Java --</p><p style='text-align:center;'>-- Интеграция с VirusTotal API --</p></html>");
         statusLabel.setForeground(new Color(255, 255, 255, 200));
-        statusLabel.setFont(new Font("Verdana", Font.PLAIN, 14));
+        statusLabel.setFont(customFont.deriveFont(Font.PLAIN, 14));
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        mainPanel.add(statusLabel, BorderLayout.CENTER);
+
+        // Панель для нижних компонентов
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(bgColor);
+        bottomPanel.add(loadingBar, BorderLayout.NORTH);
+        bottomPanel.add(statusLabel, BorderLayout.CENTER);
 
         // Details button
         detailsBtn = new JButton("Показать детали отчёта");
-        styleButton(detailsBtn, false);
+        styleButton(detailsBtn, false, customFont);
         detailsBtn.setVisible(false);
         detailsBtn.addActionListener(e -> showVirusTotalDetails());
 
-        // Upload button (теперь это поле класса)
+        // Upload button
         uploadBtn = new JButton("Выберите файл для проверки");
-        styleButton(uploadBtn, true);
+        styleButton(uploadBtn, true, customFont);
         uploadBtn.addActionListener(e -> uploadFile());
 
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 0, 10));
         buttonPanel.setBackground(bgColor);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        detailsBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, detailsBtn.getPreferredSize().height));
-        uploadBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, uploadBtn.getPreferredSize().height));
-
         buttonPanel.add(detailsBtn);
         buttonPanel.add(uploadBtn);
 
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
         add(mainPanel);
     }
 
-    public void styleButton(JButton button, boolean isPrimary) {
-        Font buttonFont = UIManager.getFont("Button.font");
-        if (buttonFont == null) {
-            buttonFont = new Font("Verdana", Font.BOLD, 14);
+    // Загружаем кастомный шрифт
+    private Font loadCustomFont(float size) {
+        try {
+            InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/Tektur-VariableFont_wdth,wght.ttf");
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(customFont);
+            return customFont.deriveFont(Font.PLAIN, size);
+        } catch (Exception e) {
+            System.err.println("Ошибка загрузки шрифта: " + e.getMessage());
+            return new Font("SansSerif", Font.PLAIN, (int) size);
         }
-        button.setFont(buttonFont.deriveFont(Font.BOLD));
+    }
+
+    // Упрощаем метод styleButton, передавая ему кастомный шрифт
+    public void styleButton(JButton button, boolean isPrimary, Font font) {
+        button.setFont(font.deriveFont(Font.BOLD, 14)); // Применяем шрифт
         button.setForeground(textColor);
         button.setBackground(isPrimary ? buttonBg : new Color(255, 255, 255, 50));
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(textColor, isPrimary ? 2 : 1),
-                BorderFactory.createEmptyBorder(10, 0, 10, 0) // Уменьшаем боковые отступы
+                BorderFactory.createEmptyBorder(10, 0, 10, 0)
         ));
 
         button.addMouseListener(new MouseAdapter() {
@@ -152,6 +203,7 @@ public class EvilGuard extends JFrame {
         int returnValue = fileChooser.showOpenDialog(this);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
+            currentFile = selectedFile;
             checkFileWithVirusTotal(selectedFile);
         }
     }
@@ -323,14 +375,26 @@ public class EvilGuard extends JFrame {
         int positives = virustotalData.optInt("positives", 0);
         int total = virustotalData.optInt("total", 0);
 
-        if (positives >= 5) {
-            showCriticalMessage("Результат проверки",
-                    "Обнаружено " + positives + " из " + total + " антивирусов\nФайл вредоносный!");
+        if (positives >= 1) {
+
+            String fileName = currentFile.getName().toLowerCase();
+            terminateProcess(currentFile.getName());
+
             detailsBtn.setVisible(true);
-        } else if (positives >= 1) {
-            showWarningMessage("Результат проверки",
-                    "Обнаружено " + positives + " из " + total + " антивирусов\nФайл подозрительный!");
-            detailsBtn.setVisible(true);
+
+            String[] options = {"Да", "Нет"};
+            int response = JOptionPane.showOptionDialog(null,
+                    "Обнаружено " + positives + " из " + total + " антивирусов. Файл вредоносный! Мы рекомендуем его удалить. Удалить файл?",
+                    "Вредоносный файл обнаружен",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    options[0]); // Выбор по умолчанию
+
+            if (response == 0) { // Если нажата "Да"
+                deleteFile(currentFile);
+            }
         } else {
             showInfoMessage("Результат проверки",
                     "Файл чистый (0 из " + total + " антивирусов обнаружили угрозу)");
@@ -338,6 +402,47 @@ public class EvilGuard extends JFrame {
         }
 
         statusLabel.setText("Проверка завершена");
+    }
+
+    private void deleteFile(File file) {
+        if (file.exists() && file.setWritable(true) && file.delete()) {
+            JOptionPane.showMessageDialog(null, "Файл успешно удален.");
+        } else {
+            JOptionPane.showMessageDialog(null, "Не удалось удалить файл. Возможно, он используется.");
+        }
+    }
+
+    private void terminateProcess(String fileName) {
+        List<String> processes = new ArrayList<>();
+        try {
+            Process process = Runtime.getRuntime().exec("tasklist");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                processes.add(line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        boolean isRunning = processes.stream().anyMatch(p -> p.contains(fileName));
+        if (isRunning) {
+            int response = JOptionPane.showConfirmDialog(null,
+                    "Файл " + fileName + " запущен. Завершить процесс?",
+                    "Подозрительный файл запущен",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (response == JOptionPane.YES_OPTION) {
+                try {
+                    Runtime.getRuntime().exec("taskkill /F /IM " + fileName);
+                    JOptionPane.showMessageDialog(null, "Процесс успешно завершен.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Не удалось завершить процесс.");
+                }
+            }
+        }
     }
 
     public void showVirusTotalDetails() {
