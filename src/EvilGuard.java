@@ -28,9 +28,9 @@ public class EvilGuard extends JFrame {
     private JProgressBar loadingBar;
     private JLabel statusLabel;
     private JButton detailsBtn;
-    private JButton uploadBtn; // Объявляем как поле класса
+    private JButton uploadBtn;
     private JSONObject virustotalData;
-    private static final String API_KEY = "8958add810162195c3a9f355ef728c5a3652301a778f7ac405f015772032112b";
+    private static final String API_KEY = "your_api_key"; // Вставить api ключ пользователя
 
     private File currentFile;
 
