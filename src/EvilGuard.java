@@ -223,7 +223,7 @@ public class EvilGuard extends JFrame {
     private JSONObject getVirusTotalReport(String fileHash) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://www.virustotal.com/vtapi/v3/file/report?apikey=" + API_KEY + "&resource=" + fileHash))
+                .uri(URI.create("https://www.virustotal.com/vtapi/v2/file/report?apikey=" + API_KEY + "&resource=" + fileHash))
                 .GET()
                 .build();
 
@@ -338,7 +338,7 @@ public class EvilGuard extends JFrame {
         byte[] fileBytes = Files.readAllBytes(file.toPath());
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://www.virustotal.com/vtapi/v3/file/scan"))
+                .uri(URI.create("https://www.virustotal.com/vtapi/v2/file/scan"))
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .POST(ofMimeMultipartData(file.getName(), fileBytes, boundary))
                 .build();
