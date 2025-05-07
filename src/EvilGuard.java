@@ -28,9 +28,9 @@ public class EvilGuard extends JFrame {
     private JProgressBar loadingBar;
     private JLabel statusLabel;
     private JButton detailsBtn;
-    private JButton uploadBtn; // Объявляем как поле класса
+    private JButton uploadBtn; 
     private JSONObject virustotalData;
-    private static final String API_KEY = "8958add810162195c3a9f355ef728c5a3652301a778f7ac405f015772032112b";
+    private static final String API_KEY = "api_key";
 
     private File currentFile;
 
@@ -52,18 +52,14 @@ public class EvilGuard extends JFrame {
             System.err.println("Не удалось загрузить иконку: " + e.getMessage());
         }
         try {
-            // Загружаем шрифт из ресурсов
             InputStream fontStream = getClass().getResourceAsStream("/resources/fonts/Tektur-VariableFont_wdth,wght.ttf");
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-
-            // Регистрируем шрифт в графическом окружении
+            
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
 
-            // Создаем производный шрифт с нужным размером
             Font derivedFont = customFont.deriveFont(Font.PLAIN, 14);
-
-            // Устанавливаем шрифт по умолчанию для всех компонентов Swing
+            
             UIManager.put("Button.font", derivedFont);
             UIManager.put("Label.font", derivedFont);
             UIManager.put("TextField.font", derivedFont);
@@ -95,15 +91,12 @@ public class EvilGuard extends JFrame {
         mainPanel.setBackground(bgColor);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Загружаем кастомный шрифт
         Font customFont = loadCustomFont(14);
 
-        // Создаем центральную панель с GridBagLayout для точного позиционирования
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setBackground(bgColor);
         GridBagConstraints gbc = new GridBagConstraints();
 
-        // Title - теперь в центре
         JLabel titleLabel = new JLabel("<html><h1 style='text-align:center'>EvilGuard</h1><h4 style='color:rgba(255,255,255,0.5); text-align:center;'>Приложение написано ребятами из БАС2402</h4></html>", SwingConstants.CENTER);
         titleLabel.setForeground(textColor);
         titleLabel.setFont(customFont.deriveFont(Font.BOLD, 24));
@@ -114,7 +107,7 @@ public class EvilGuard extends JFrame {
         gbc.anchor = GridBagConstraints.CENTER;
         centerPanel.add(titleLabel, gbc);
 
-        // Добавляем центральную панель в mainPanel
+        // Центральная панель
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
         // Loading bar
@@ -123,7 +116,7 @@ public class EvilGuard extends JFrame {
         loadingBar.setVisible(false);
         loadingBar.setBorder(BorderFactory.createLineBorder(textColor, 1));
 
-        // Status label
+        // Status 
         statusLabel = new JLabel("<html><p style='text-align:center;'>-- Приложение написано на Java --</p><p style='text-align:center;'>-- Интеграция с VirusTotal API --</p></html>");
         statusLabel.setForeground(new Color(255, 255, 255, 200));
         statusLabel.setFont(customFont.deriveFont(Font.PLAIN, 14));
@@ -173,9 +166,8 @@ public class EvilGuard extends JFrame {
         }
     }
 
-    // Упрощаем метод styleButton, передавая ему кастомный шрифт
     public void styleButton(JButton button, boolean isPrimary, Font font) {
-        button.setFont(font.deriveFont(Font.BOLD, 14)); // Применяем шрифт
+        button.setFont(font.deriveFont(Font.BOLD, 14)); 
         button.setForeground(textColor);
         button.setBackground(isPrimary ? buttonBg : new Color(255, 255, 255, 50));
         button.setFocusPainted(false);
@@ -229,7 +221,6 @@ public class EvilGuard extends JFrame {
 
         HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
 
-        // Добавляем проверку ответа
         if (response.statusCode() != 200) {
             throw new IOException("VirusTotal API error: HTTP " + response.statusCode());
         }
@@ -252,7 +243,7 @@ public class EvilGuard extends JFrame {
         StringBuilder output = new StringBuilder();
         String line;
         while ((line = reader.readLine()) != null) {
-            output.append(line).append("\n"); // Сохраняем каждую строку с переносом
+            output.append(line).append("\n");
         }
         return output.toString();
     }
@@ -300,7 +291,7 @@ public class EvilGuard extends JFrame {
                         if (virustotalData.has("scan_id")) {
                             // Ждем и проверяем статус несколько раз
                             for (int i = 0; i < 5; i++) {
-                                Thread.sleep(15000); // Ждем 15 секунд
+                                Thread.sleep(15000); 
                                 virustotalData = getVirusTotalReport(virustotalData.getString("scan_id"));
                                 if (virustotalData.optInt("response_code") == 1) {
                                     break;
@@ -328,7 +319,6 @@ public class EvilGuard extends JFrame {
     }
 
     private JSONObject uploadFileToVirusTotal(File file) throws IOException, InterruptedException {
-        // Проверяем размер файла еще раз перед отправкой
         if (file.length() > 32 * 1024 * 1024) {
             throw new IOException("Файл слишком большой (максимум 32 МБ)");
         }
